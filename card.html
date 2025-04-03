@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Interaktif</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('bg1.jpg') no-repeat center center/cover;
+            backdrop-filter: blur(1);
+        }
+        .card-container {
+            perspective: 1000px;
+        }
+        .card {
+            width: 350px;
+            height: 450px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.77s;
+            border-radius: 20px;
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 350px;
+            height: 450px;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-radius: 20px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card-front {
+            background: white;
+            align-items: center;
+        }
+        .card-back {
+            background: #333;
+            color: white;
+            transform: rotateY(180deg);
+            padding: 20px;
+            text-align: left;
+            align-items: left;
+            border-radius: 20px;
+            padding-left: 50px;
+        }
+        .card-container:hover .card {
+            transform: rotateY(180deg);
+        }
+        img {
+            width: 80%;
+            border-radius: 10px;
+        }
+        .card-front p {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .card-back p {
+            margin: 10px 0;
+        }
+        @media (max-width: 768px) {
+            .card-container:hover .card {
+                transform: none; /* Disable hover flip on mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container" onclick="flipCard()">
+        <div class="card" id="flip-card">
+            <div class="card-front">
+                <img src="pp1.jpeg" alt="Foto Profil">
+                <p>Profile</p>
+            </div>
+            <div class="card-back">
+                <p>Name: Dzaky Athallah </p>
+                <!--<p>Emaill: <span class="clickable" onclick="openLink('mailto:athallahdzaky207@gmail.com')"> athallahdzaky207@gmail.com</span></p>-->
+                <p>Campus: Telkom University Purwokerto</p>
+                <p>Program Study : Data Science</p>
+                <p>Instagram: <span class="clickable" onclick="openLink('https://www.instagram.com/dzaky_207/')"> @Dzaky_207</span></p>
+                <p>X/Twitter: <span class="clickable" onclick="openLink('https://x.com/dzaky207/')"> @Dzaky207</span></p>
+                <p>Facebook: <span class="clickable" onclick="openLink('https://www.facebook.com/dzaky207/')"> Dzaky Athallah</span></p>
+                <p>Website: <span class="clickable" onclick="openLink('https://www.dzaky207.my.id')"> dzaky207.my.id    </span></p>
+                <p>GitHub: <span class="clickable" onclick="openLink('https://github.com/dzaky207')"> Dzaky207</span></p>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openLink(url) {
+            window.open(url, '_blank');
+        }
+        </script>
+        
+    <script>
+        function flipCard() {
+            const card = document.getElementById('flip-card');
+            if (window.innerWidth <= 768) {
+                card.style.transform = card.style.transform === 'rotateY(180deg)' ? 'rotateY(0deg)' : 'rotateY(180deg)';
+            }
+        }
+    </script>
+</body>
+</html>
