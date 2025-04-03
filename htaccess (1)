@@ -1,0 +1,23 @@
+
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^dzaky207\.my\.id$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.dzaky207\.my\.id$
+RewriteRule ^(.*)$ "https\:\/\/dzaky207\.my\.id\/$1" [R=302,L]
+
+RewriteCond %{HTTP_REFERER} !^http://dzaky207.my.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://dzaky207.my.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.dzaky207.my.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^http://www.dzaky207.my.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://dzaky207.my.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://dzaky207.my.id$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.dzaky207.my.id/.*$      [NC]
+RewriteCond %{HTTP_REFERER} !^https://www.dzaky207.my.id$      [NC]
+RewriteRule .*\.()$ - [F,NC]
+
+RewriteEngine On
+RewriteRule ^(index\.html|index\.php|/)?$ /card.html [R=301,L]
+DirectoryIndex card.html
+#RewriteRule ^$ /card/card.html [R=301,L]
+# Redirect dzaky207.my.id/card/ ke dzaky207.my.id/card/card.html
+RewriteCond %{REQUEST_URI} ^/*/?$  
+#RewriteRule ^card/?$ card.html [R=301,L]
