@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✨ Lucky Gacha ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --gold:#FFD700; --gold-dark:#B8860B; --bg:#0a0a1a; --glow:#7B2FBE; --glow2:#00e5ff; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--bg); font-family:'Rajdhani',sans-serif; color:#fff;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden;
+  }
+  body::after {
+    content:''; position:fixed; inset:0;
+    background:radial-gradient(ellipse at 20% 50%,rgba(123,47,190,0.12) 0%,transparent 50%),
+               radial-gradient(ellipse at 80% 50%,rgba(0,229,255,0.08) 0%,transparent 50%);
+    pointer-events:none; z-index:0;
+  }
+  .container { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:20px; }
+  h1 {
+    font-family:'Orbitron',sans-serif; font-size:2.3rem; font-weight:900; letter-spacing:0.15em;
+    background:linear-gradient(135deg,var(--gold) 0%,#fff 50%,var(--glow2) 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 18px rgba(255,215,0,0.5));
+    animation:titlePulse 3s ease-in-out infinite;
+  }
+  @keyframes titlePulse { 0%,100%{filter:drop-shadow(0 0 18px rgba(255,215,0,0.5))} 50%{filter:drop-shadow(0 0 32px rgba(255,215,0,0.9))} }
+
+  /* Room badge */
+  .room-badge {
+    font-family:'Orbitron',sans-serif; font-size:0.68rem; font-weight:700;
+    letter-spacing:0.15em; color:rgba(255,255,255,0.2);
+    background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+    border-radius:6px; padding:4px 12px;
+  }
+  .room-badge span { color:rgba(255,215,0,0.5); }
+
+  .machine {
+    background:linear-gradient(160deg,#1e1e40 0%,#0d0d25 100%);
+    border:2px solid rgba(123,47,190,0.6); border-radius:24px; padding:26px 30px 22px;
+    box-shadow:0 0 60px rgba(123,47,190,0.3),inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .machine-top { display:flex; justify-content:space-between; margin-bottom:16px; }
+  .credits { display:flex; align-items:center; gap:8px; font-family:'Orbitron',sans-serif; font-size:0.82rem; color:rgba(255,255,255,0.5); }
+  .credits-val { color:var(--glow2); font-weight:700; font-size:1.05rem; text-shadow:0 0 10px var(--glow2); }
+  .slots { display:flex; gap:12px; align-items:center; margin-bottom:18px; }
+  .slot {
+    width:112px; height:112px; background:#06060f;
+    border:2px solid rgba(123,47,190,0.5); border-radius:14px; overflow:hidden; position:relative;
+    box-shadow:inset 0 0 20px rgba(0,0,0,0.8),0 0 20px rgba(123,47,190,0.2);
+  }
+  .slot-inner { display:flex; flex-direction:column; align-items:center; }
+  .slot-item { width:112px; height:112px; display:flex; align-items:center; justify-content:center; font-size:3rem; flex-shrink:0; }
+  .slot::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(to bottom,rgba(6,6,15,0.85) 0%,transparent 30%,transparent 70%,rgba(6,6,15,0.85) 100%);
+    pointer-events:none; z-index:2;
+  }
+  .slot-center-line {
+    position:absolute; top:50%; left:0; right:0; height:2px; transform:translateY(-50%);
+    background:linear-gradient(90deg,transparent,var(--gold),transparent); opacity:0.4; z-index:3; pointer-events:none;
+  }
+  .slot-divider { font-size:1.8rem; color:var(--gold); opacity:0.5; text-shadow:0 0 10px var(--gold); }
+  .result-text { height:24px; font-size:0.92rem; font-weight:600; letter-spacing:0.06em; text-align:center; color:rgba(255,255,255,0.3); margin-bottom:12px; }
+  .result-text.win { color:var(--gold); text-shadow:0 0 10px var(--gold); }
+  .spin-btn {
+    width:100%; padding:14px; font-family:'Orbitron',sans-serif; font-size:0.95rem; font-weight:700;
+    letter-spacing:0.2em; text-transform:uppercase;
+    background:linear-gradient(135deg,#7B2FBE,#4a1a8a); border:none; border-radius:12px; color:#fff; cursor:pointer;
+    box-shadow:0 4px 20px rgba(123,47,190,0.5); transition:transform 0.1s,box-shadow 0.3s;
+  }
+  .spin-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 32px rgba(123,47,190,0.7); }
+  .spin-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+  @keyframes spinReel { 0%{transform:translateY(0)} 100%{transform:translateY(-224px)} }
+  .slot-inner.spinning { animation:spinReel 0.15s linear infinite; }
+
+  .slot.matched { border-color:var(--gold); box-shadow:inset 0 0 20px rgba(255,215,0,0.3),0 0 40px rgba(255,215,0,0.6); animation:matchPulse 0.5s ease-in-out 3; }
+  @keyframes matchPulse { 0%,100%{box-shadow:inset 0 0 20px rgba(255,215,0,0.3),0 0 40px rgba(255,215,0,0.6)} 50%{box-shadow:inset 0 0 40px rgba(255,215,0,0.5),0 0 80px rgba(255,215,0,0.9)} }
+
+  .win-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:100; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+  .win-overlay.visible { opacity:1; pointer-events:all; }
+  .win-card {
+    background:linear-gradient(145deg,#1a1a3a,#0d0d25); border:2px solid var(--gold); border-radius:24px;
+    padding:42px 50px; text-align:center; box-shadow:0 0 80px rgba(255,215,0,0.5);
+    transform:scale(0.8); transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .win-overlay.visible .win-card { transform:scale(1); }
+  .win-emoji { font-size:4.5rem; display:block; margin-bottom:12px; animation:winBounce 0.6s ease-out; }
+  @keyframes winBounce { 0%{transform:scale(0) rotate(-10deg)} 60%{transform:scale(1.2) rotate(5deg)} 100%{transform:scale(1) rotate(0)} }
+  .win-title { font-family:'Orbitron',sans-serif; font-size:1.7rem; font-weight:900; color:var(--gold); text-shadow:0 0 20px var(--gold); margin-bottom:8px; }
+  .win-subtitle { font-size:1rem; color:rgba(255,255,255,0.6); margin-bottom:6px; }
+  .win-item { font-size:1.3rem; font-weight:700; margin-bottom:26px; }
+  .win-close {
+    background:linear-gradient(135deg,var(--gold),var(--gold-dark)); border:none; border-radius:10px;
+    padding:12px 36px; font-family:'Orbitron',sans-serif; font-size:0.88rem; font-weight:700;
+    color:#000; cursor:pointer; letter-spacing:0.15em; box-shadow:0 4px 16px rgba(255,215,0,0.4); transition:transform 0.1s;
+  }
+  .win-close:hover { transform:translateY(-2px); }
+  .confetti-container { position:fixed; inset:0; pointer-events:none; z-index:99; }
+  .confetti-particle { position:absolute; border-radius:2px; animation:confettiFall linear forwards; }
+  @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+  .legend { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; font-size:0.75rem; color:rgba(255,255,255,0.3); }
+  .spin-counter { font-family:'Orbitron',sans-serif; font-size:0.7rem; color:rgba(255,255,255,0.25); text-align:center; letter-spacing:0.08em; }
+
+  /* No-room warning */
+  .no-room-warn {
+    background:rgba(255,149,0,0.08); border:1px solid rgba(255,149,0,0.3); border-radius:10px;
+    padding:10px 18px; font-size:0.8rem; color:rgba(255,149,0,0.8); text-align:center; letter-spacing:0.04em;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>✦ Lucky Gacha ✦</h1>
+  <div class="room-badge" id="roomBadge">ROOM: <span id="roomBadgeId">—</span></div>
+
+  <div class="no-room-warn" id="noRoomWarn" style="display:none;">
+    ⚠️ Tidak ada room ID — menggunakan config default (15%)
+  </div>
+
+  <div class="machine">
+    <div class="machine-top">
+      <div class="credits">KOIN: <span class="credits-val" id="coinDisplay">100</span></div>
+      <div class="credits">MENANG: <span class="credits-val" id="winDisplay">0</span></div>
+    </div>
+    <div class="slots">
+      <div class="slot" id="slot0"><div class="slot-inner" id="reel0"></div><div class="slot-center-line"></div></div>
+      <div class="slot-divider">✦</div>
+      <div class="slot" id="slot1"><div class="slot-inner" id="reel1"></div><div class="slot-center-line"></div></div>
+      <div class="slot-divider">✦</div>
+      <div class="slot" id="slot2"><div class="slot-inner" id="reel2"></div><div class="slot-center-line"></div></div>
+    </div>
+    <div class="result-text" id="resultText">— Putar untuk mencoba keberuntunganmu —</div>
+    <button class="spin-btn" id="spinBtn" onclick="spin()">🎰 PUTAR! (-10 koin)</button>
+  </div>
+  <div class="spin-counter" id="spinCounter">Spin ke-0</div>
+  <div class="legend">🍒 Ceri &nbsp;🍋 Lemon &nbsp;🍇 Anggur &nbsp;⭐ Bintang &nbsp;💎 Berlian &nbsp;🔔 Lonceng &nbsp;🍀 Semanggi &nbsp;🎯 Target</div>
+</div>
+
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card">
+    <span class="win-emoji" id="winEmoji">🎉</span>
+    <div class="win-title">JACKPOT!</div>
+    <div class="win-subtitle">Kamu mendapatkan:</div>
+    <div class="win-item" id="winItemName">—</div>
+    <button class="win-close" onclick="closeWin()">KLAIM HADIAH</button>
+  </div>
+</div>
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+const ITEMS = [
+  {emoji:'🍒',name:'Ceri Merah',reward:20},{emoji:'🍋',name:'Lemon Emas',reward:25},
+  {emoji:'🍇',name:'Anggur Ungu',reward:30},{emoji:'⭐',name:'Bintang Keberuntungan',reward:50},
+  {emoji:'💎',name:'Berlian Biru',reward:100},{emoji:'🔔',name:'Lonceng Emas',reward:40},
+  {emoji:'🍀',name:'Semanggi Ajaib',reward:60},{emoji:'🎯',name:'Target Sempurna',reward:75},
+];
+const SLOT_H = 112;
+let coins=100, wins=0, isSpinning=false, totalSpins=0;
+
+// ── Room detection ───────────────────────────────────────
+const params  = new URLSearchParams(location.search);
+const roomId  = (params.get('room') || '').toUpperCase() || null;
+
+document.getElementById('roomBadgeId').textContent = roomId || 'DEFAULT';
+if (!roomId) document.getElementById('noRoomWarn').style.display = 'block';
+
+function configKey(id) { return `gacha_config_${id}`; }
+function defaultConfig() { return { mode:'percent', jackpotChance:15, guaranteedAt:null, neverBefore:null, disabled:false }; }
+function loadConfig() {
+  if (!roomId) return defaultConfig();
+  try {
+    const raw = localStorage.getItem(configKey(roomId));
+    return raw ? {...defaultConfig(),...JSON.parse(raw)} : defaultConfig();
+  } catch(e) { return defaultConfig(); }
+}
+
+function shouldJackpot(cfg) {
+  if (cfg.disabled) return false;
+  if (cfg.mode==='guaranteed') return totalSpins === cfg.guaranteedAt;
+  if (cfg.mode==='neverBefore') {
+    if (totalSpins < cfg.neverBefore) return false;
+    return Math.random()*100 < cfg.jackpotChance;
+  }
+  return Math.random()*100 < cfg.jackpotChance;
+}
+
+// ── Reel helpers ─────────────────────────────────────────
+function fillReel(reel, count) {
+  reel.innerHTML='';
+  for (let j=0;j<count;j++) {
+    const d=document.createElement('div'); d.className='slot-item';
+    d.textContent=ITEMS[Math.floor(Math.random()*ITEMS.length)].emoji;
+    reel.appendChild(d);
+  }
+}
+function buildReels() {
+  for (let i=0;i<3;i++) {
+    fillReel(document.getElementById(`reel${i}`),1);
+    document.getElementById(`reel${i}`).style.transform='translateY(0)';
+  }
+}
+buildReels();
+
+function stopReel(reelEl, finalEmoji, callback) {
+  reelEl.classList.remove('spinning');
+  reelEl.innerHTML='';
+  reelEl.style.transition='none';
+  reelEl.style.transform='translateY(0)';
+
+  const COUNT=7, CENTER=3;
+  for (let p=0;p<COUNT;p++) {
+    const d=document.createElement('div'); d.className='slot-item';
+    if (p===CENTER) { d.textContent=finalEmoji; }
+    else { d.textContent=ITEMS[Math.floor(Math.random()*ITEMS.length)].emoji; d.style.opacity='0.2'; }
+    reelEl.appendChild(d);
+  }
+  const startY=-(CENTER-1)*SLOT_H, endY=-CENTER*SLOT_H;
+  reelEl.style.transform=`translateY(${startY}px)`;
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      reelEl.style.transition='transform 0.35s cubic-bezier(0.22,1,0.36,1)';
+      reelEl.style.transform=`translateY(${endY}px)`;
+      reelEl.addEventListener('transitionend', function h(){
+        reelEl.removeEventListener('transitionend',h);
+        reelEl.style.transition='';
+        if(callback) callback();
+      });
+    });
+  });
+}
+
+// ── Game logic ───────────────────────────────────────────
+function updateUI() {
+  document.getElementById('coinDisplay').textContent=coins;
+  document.getElementById('winDisplay').textContent=wins;
+  document.getElementById('spinCounter').textContent=`Spin ke-${totalSpins}`;
+}
+
+function spin() {
+  if (isSpinning) return;
+  if (coins<10) { document.getElementById('resultText').textContent='💸 Koin habis! Refresh untuk reset.'; return; }
+  coins-=10; totalSpins++;
+  updateUI(); isSpinning=true;
+  document.getElementById('spinBtn').disabled=true;
+  for(let i=0;i<3;i++) document.getElementById(`slot${i}`).classList.remove('matched');
+  document.getElementById('resultText').textContent='⟳ Berputar...';
+  document.getElementById('resultText').className='result-text';
+
+  const cfg=loadConfig();
+  const jackpot=shouldJackpot(cfg);
+
+  const results=[
+    ITEMS[Math.floor(Math.random()*ITEMS.length)],
+    ITEMS[Math.floor(Math.random()*ITEMS.length)],
+    ITEMS[Math.floor(Math.random()*ITEMS.length)],
+  ];
+  if (jackpot) {
+    const lucky=ITEMS[Math.floor(Math.random()*ITEMS.length)];
+    results[0]=results[1]=results[2]=lucky;
+  } else {
+    while(results[0].emoji===results[1].emoji && results[1].emoji===results[2].emoji)
+      results[2]=ITEMS[Math.floor(Math.random()*ITEMS.length)];
+  }
+
+  for(let i=0;i<3;i++){
+    const reel=document.getElementById(`reel${i}`);
+    fillReel(reel,4); reel.style.transition='none'; reel.style.transform='translateY(0)';
+    reel.classList.add('spinning');
+  }
+
+  let stopped=0;
+  [900,1300,1700].forEach((delay,i)=>{
+    setTimeout(()=>{
+      stopReel(document.getElementById(`reel${i}`),results[i].emoji,()=>{
+        stopped++;
+        if(stopped===3) checkResult(results,jackpot);
+      });
+    },delay);
+  });
+}
+
+function checkResult(results,jackpot){
+  if(jackpot){
+    wins++; coins+=results[0].reward; updateUI();
+    for(let i=0;i<3;i++) document.getElementById(`slot${i}`).classList.add('matched');
+    document.getElementById('resultText').textContent=`🏆 JACKPOT! +${results[0].reward} koin!`;
+    document.getElementById('resultText').className='result-text win';
+    setTimeout(()=>showWin(results[0]),600);
+  } else {
+    document.getElementById('resultText').textContent='😔 Hampir! Coba lagi~';
+    document.getElementById('resultText').className='result-text';
+  }
+  isSpinning=false;
+  document.getElementById('spinBtn').disabled=false;
+}
+function showWin(item){
+  document.getElementById('winEmoji').textContent=item.emoji;
+  document.getElementById('winItemName').textContent=`${item.emoji} ${item.name} — +${item.reward} koin!`;
+  document.getElementById('winOverlay').classList.add('visible');
+  spawnConfetti();
+}
+function closeWin(){
+  document.getElementById('winOverlay').classList.remove('visible');
+  document.getElementById('confettiContainer').innerHTML='';
+}
+function spawnConfetti(){
+  const c=document.getElementById('confettiContainer'); c.innerHTML='';
+  const colors=['#FFD700','#ff3c5f','#00e5ff','#7B2FBE','#00ff99','#ff9500'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div'); p.className='confetti-particle';
+    p.style.cssText=`left:${Math.random()*100}vw;top:-20px;background:${colors[Math.floor(Math.random()*colors.length)]};width:${Math.random()*8+4}px;height:${Math.random()*8+4}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${Math.random()*2+1.5}s;animation-delay:${Math.random()}s`;
+    c.appendChild(p);
+  }
+}
+
+updateUI();
+</script>
+</body>
+</html>

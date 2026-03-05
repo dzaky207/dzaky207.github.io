@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚙️ Gacha Remote Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d; --panel: #141414; --border: #2a2a2a;
+    --accent: #00e5ff; --gold: #FFD700; --red: #ff3c5f;
+    --green: #00ff99; --orange: #ff9500;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); font-family:'Rajdhani',sans-serif; color:#fff; min-height:100vh; padding:32px 20px; }
+  .page { max-width:700px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
+
+  .header { display:flex; align-items:center; justify-content:space-between; padding-bottom:16px; border-bottom:1px solid var(--border); }
+  .header h1 { font-family:'Orbitron',sans-serif; font-size:1.2rem; font-weight:700; letter-spacing:0.15em; color:var(--accent); }
+
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px 22px; }
+  .card-title {
+    font-family:'Orbitron',sans-serif; font-size:0.72rem; font-weight:700;
+    letter-spacing:0.2em; text-transform:uppercase; color:rgba(255,255,255,0.3);
+    margin-bottom:16px; display:flex; align-items:center; gap:8px;
+  }
+  .card-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* Room section */
+  .room-display {
+    display:flex; align-items:center; gap:10px;
+    background:#0a0a0a; border:1px solid var(--border); border-radius:10px; padding:12px 16px;
+  }
+  .room-id {
+    font-family:'Orbitron',sans-serif; font-size:1.1rem; font-weight:700;
+    color:var(--gold); letter-spacing:0.12em; flex:1;
+  }
+  .room-actions { display:flex; gap:8px; }
+  .icon-btn {
+    background:#1a1a1a; border:1px solid var(--border); border-radius:8px;
+    padding:8px 12px; color:rgba(255,255,255,0.5); cursor:pointer; font-size:0.8rem;
+    font-family:'Rajdhani',sans-serif; font-weight:600; transition:all 0.15s;
+    white-space:nowrap;
+  }
+  .icon-btn:hover { border-color:rgba(255,255,255,0.2); color:#fff; background:#222; }
+  .icon-btn.accent { border-color:var(--accent); color:var(--accent); }
+
+  /* Link box */
+  .link-box {
+    display:flex; align-items:center; gap:8px; margin-top:10px;
+    background:#0a0a0a; border:1px solid var(--border); border-radius:8px; padding:10px 14px;
+  }
+  .link-text { font-size:0.75rem; color:rgba(255,255,255,0.35); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:monospace; }
+  .copy-btn {
+    background:#1a1a1a; border:1px solid var(--border); border-radius:6px;
+    padding:6px 12px; color:rgba(255,255,255,0.5); cursor:pointer; font-size:0.75rem;
+    font-family:'Rajdhani',sans-serif; font-weight:600; transition:all 0.15s; white-space:nowrap;
+  }
+  .copy-btn:hover { border-color:var(--green); color:var(--green); }
+  .copy-btn.copied { border-color:var(--green); color:var(--green); }
+
+  /* Mode selector */
+  .mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .mode-btn {
+    padding:13px 10px; background:#1a1a1a; border:2px solid var(--border);
+    border-radius:12px; color:rgba(255,255,255,0.5); cursor:pointer;
+    font-family:'Rajdhani',sans-serif; font-size:0.88rem; font-weight:600;
+    text-align:center; transition:all 0.15s; line-height:1.4;
+  }
+  .mode-btn:hover { border-color:rgba(255,255,255,0.2); color:#fff; }
+  .mode-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(0,229,255,0.05); }
+  .mode-btn.active.gold { border-color:var(--gold); color:var(--gold); background:rgba(255,215,0,0.05); }
+  .mode-btn.active.red { border-color:var(--red); color:var(--red); background:rgba(255,60,95,0.05); }
+  .mode-btn.active.orange { border-color:var(--orange); color:var(--orange); background:rgba(255,149,0,0.05); }
+  .mode-icon { font-size:1.4rem; display:block; margin-bottom:3px; }
+  .mode-label { font-size:0.82rem; font-weight:700; display:block; }
+  .mode-desc { font-size:0.68rem; opacity:0.55; display:block; margin-top:2px; }
+
+  .control-group { display:flex; flex-direction:column; gap:12px; }
+  .control-row { display:flex; align-items:center; gap:12px; }
+  label { font-size:0.83rem; color:rgba(255,255,255,0.45); min-width:180px; }
+  input[type=range] {
+    -webkit-appearance:none; width:100%; height:4px;
+    background:var(--border); border-radius:2px; outline:none; cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:17px; height:17px; border-radius:50%;
+    background:var(--accent); box-shadow:0 0 8px var(--accent); cursor:pointer;
+  }
+  input[type=number] {
+    width:100%; background:#1a1a1a; border:1px solid var(--border); border-radius:8px;
+    padding:10px 14px; color:#fff; font-family:'Orbitron',sans-serif; font-size:0.88rem; outline:none;
+    transition:border-color 0.2s;
+  }
+  input[type=number]:focus { border-color:var(--accent); }
+  .val-badge { font-family:'Orbitron',sans-serif; font-size:0.85rem; font-weight:700; color:var(--accent); min-width:44px; text-align:right; }
+  .hint { font-size:0.72rem; color:rgba(255,255,255,0.25); margin-top:4px; }
+
+  .section { display:none; }
+  .section.visible { display:block; }
+
+  .preset-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .preset-btn {
+    padding:10px 6px; background:#1a1a1a; border:1px solid var(--border); border-radius:10px;
+    color:rgba(255,255,255,0.45); cursor:pointer; font-family:'Rajdhani',sans-serif; font-size:0.76rem;
+    font-weight:600; text-align:center; transition:all 0.15s; line-height:1.5;
+  }
+  .preset-btn:hover { border-color:rgba(255,255,255,0.2); color:#fff; background:#222; }
+  .preset-icon { font-size:1.1rem; display:block; margin-bottom:2px; }
+
+  .apply-btn {
+    width:100%; padding:15px; font-family:'Orbitron',sans-serif; font-size:0.92rem; font-weight:700;
+    letter-spacing:0.18em; text-transform:uppercase;
+    background:linear-gradient(135deg,var(--accent),#0088bb);
+    border:none; border-radius:12px; color:#000; cursor:pointer;
+    box-shadow:0 4px 20px rgba(0,229,255,0.25); transition:transform 0.1s,box-shadow 0.2s;
+  }
+  .apply-btn:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,229,255,0.4); }
+  .apply-btn:active { transform:translateY(1px); }
+
+  .current-config {
+    background:#0a0a0a; border:1px solid var(--border); border-radius:10px;
+    padding:12px 16px; font-family:'Orbitron',sans-serif; font-size:0.68rem;
+    color:rgba(255,255,255,0.25); letter-spacing:0.05em; line-height:2;
+  }
+  .cfg-row { display:flex; justify-content:space-between; }
+  .cfg-val { color:var(--accent); }
+
+  .log {
+    background:#0a0a0a; border:1px solid var(--border); border-radius:10px;
+    padding:12px 14px; font-size:0.7rem; color:rgba(255,255,255,0.25);
+    min-height:60px; max-height:100px; overflow-y:auto; line-height:1.9;
+    font-family:monospace;
+  }
+  .log .entry { display:flex; gap:8px; }
+  .log .ts { color:rgba(255,255,255,0.15); }
+  .log .ok { color:var(--green); }
+  .log .warn { color:var(--orange); }
+
+  /* All rooms list */
+  .rooms-list { display:flex; flex-direction:column; gap:6px; }
+  .room-row {
+    display:flex; align-items:center; gap:10px;
+    background:#0a0a0a; border:1px solid var(--border); border-radius:8px; padding:10px 14px;
+    cursor:pointer; transition:border-color 0.15s;
+  }
+  .room-row:hover { border-color:rgba(255,255,255,0.15); }
+  .room-row.current { border-color:var(--gold); }
+  .room-row-id { font-family:'Orbitron',sans-serif; font-size:0.8rem; color:var(--gold); flex:1; }
+  .room-row-mode { font-size:0.72rem; color:rgba(255,255,255,0.35); }
+  .room-row-del { background:none; border:none; color:rgba(255,60,95,0.4); cursor:pointer; font-size:0.9rem; padding:2px 6px; }
+  .room-row-del:hover { color:var(--red); }
+  .empty-rooms { font-size:0.78rem; color:rgba(255,255,255,0.2); text-align:center; padding:12px; }
+
+  ::-webkit-scrollbar { width:3px; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>⚙ GACHA REMOTE</h1>
+    <span style="font-size:0.72rem;color:rgba(255,255,255,0.25);">localStorage · same device only</span>
+  </div>
+
+  <!-- Room Manager -->
+  <div class="card">
+    <div class="card-title">Room Aktif</div>
+    <div class="room-display">
+      <span class="room-id" id="roomIdDisplay">—</span>
+      <div class="room-actions">
+        <button class="icon-btn" onclick="newRoom()">＋ Room Baru</button>
+        <button class="icon-btn accent" onclick="copyRoomId()">Copy ID</button>
+      </div>
+    </div>
+    <div class="link-box">
+      <span class="link-text" id="gachaLink">—</span>
+      <button class="copy-btn" id="copyLinkBtn" onclick="copyGachaLink()">Copy Link</button>
+    </div>
+    <div style="margin-top:8px;">
+      <input type="text" id="roomInput" placeholder="Masukkan Room ID untuk berpindah room..."
+        style="width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:9px 14px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:0.85rem;outline:none;"
+        onkeydown="if(event.key==='Enter') switchRoom()">
+    </div>
+    <button class="icon-btn" style="margin-top:8px;width:100%;text-align:center;" onclick="switchRoom()">Pindah ke Room ID ini</button>
+  </div>
+
+  <!-- All rooms -->
+  <div class="card">
+    <div class="card-title">Semua Room Kamu</div>
+    <div class="rooms-list" id="roomsList"></div>
+  </div>
+
+  <!-- Mode selector -->
+  <div class="card">
+    <div class="card-title">Mode Jackpot</div>
+    <div class="mode-grid">
+      <button class="mode-btn active" data-mode="percent" onclick="selectMode('percent',this)">
+        <span class="mode-icon">🎲</span><span class="mode-label">Persentase</span><span class="mode-desc">Peluang random %</span>
+      </button>
+      <button class="mode-btn" data-mode="guaranteed" onclick="selectMode('guaranteed',this)">
+        <span class="mode-icon">🎯</span><span class="mode-label">Guaranteed</span><span class="mode-desc">Pasti dapat di spin ke-N</span>
+      </button>
+      <button class="mode-btn" data-mode="neverBefore" onclick="selectMode('neverBefore',this)">
+        <span class="mode-icon">⏳</span><span class="mode-label">Terkunci</span><span class="mode-desc">Tidak bisa sebelum N spin</span>
+      </button>
+      <button class="mode-btn" data-mode="disabled" onclick="selectMode('disabled',this)">
+        <span class="mode-icon">🚫</span><span class="mode-label">Nonaktif</span><span class="mode-desc">Jackpot mustahil</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="card">
+    <div class="card-title">Pengaturan</div>
+    <div class="control-group">
+      <div class="section visible" id="sec-chance">
+        <div class="control-row">
+          <label>Peluang Jackpot</label>
+          <input type="range" id="chanceSlider" min="0" max="100" value="15" oninput="document.getElementById('chanceVal').textContent=this.value+'%'">
+          <span class="val-badge" id="chanceVal">15%</span>
+        </div>
+        <div class="hint">0% = tidak pernah &nbsp;|&nbsp; 100% = selalu menang</div>
+      </div>
+      <div class="section" id="sec-guaranteed">
+        <div class="control-row">
+          <label>Jackpot pada spin ke-</label>
+          <input type="number" id="guaranteedInput" min="1" max="9999" value="10">
+        </div>
+        <div class="hint">Jackpot PASTI terjadi tepat di spin tersebut.</div>
+      </div>
+      <div class="section" id="sec-neverBefore">
+        <div class="control-row">
+          <label>Terkunci sebelum spin ke-</label>
+          <input type="number" id="neverBeforeInput" min="1" max="9999" value="5">
+        </div>
+        <div class="hint">Jackpot tidak mungkin sebelum spin ke-N. Setelahnya, peluang berlaku normal.</div>
+      </div>
+      <div class="section" id="sec-disabled">
+        <div style="padding:12px 0;color:rgba(255,60,95,0.8);font-size:0.92rem;font-weight:600;">
+          🚫 Jackpot dinonaktifkan sepenuhnya untuk room ini.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Presets -->
+  <div class="card">
+    <div class="card-title">Preset Cepat</div>
+    <div class="preset-grid">
+      <button class="preset-btn" onclick="applyPreset('easy')"><span class="preset-icon">😊</span>Easy<br><span style="opacity:0.45;font-size:0.65rem">50% chance</span></button>
+      <button class="preset-btn" onclick="applyPreset('normal')"><span class="preset-icon">🎲</span>Normal<br><span style="opacity:0.45;font-size:0.65rem">15% chance</span></button>
+      <button class="preset-btn" onclick="applyPreset('hard')"><span class="preset-icon">😤</span>Hard<br><span style="opacity:0.45;font-size:0.65rem">5% chance</span></button>
+      <button class="preset-btn" onclick="applyPreset('impossible')"><span class="preset-icon">💀</span>Impossible<br><span style="opacity:0.45;font-size:0.65rem">Dinonaktifkan</span></button>
+      <button class="preset-btn" onclick="applyPreset('pity10')"><span class="preset-icon">🛡️</span>Pity x10<br><span style="opacity:0.45;font-size:0.65rem">Terkunci 10 spin</span></button>
+      <button class="preset-btn" onclick="applyPreset('gift5')"><span class="preset-icon">🎁</span>Gift x5<br><span style="opacity:0.45;font-size:0.65rem">Jackpot di spin ke-5</span></button>
+    </div>
+  </div>
+
+  <button class="apply-btn" onclick="applyConfig()">✦ TERAPKAN KE ROOM INI ✦</button>
+
+  <div class="card">
+    <div class="card-title">Konfigurasi Aktif</div>
+    <div class="current-config" id="currentConfig">—</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Log</div>
+    <div class="log" id="logBox"></div>
+  </div>
+
+</div>
+<script>
+const ROOMS_INDEX_KEY = 'gacha_rooms_index'; // array of room IDs
+let currentRoomId = null;
+let currentMode = 'percent';
+
+// ── Room ID helpers ──────────────────────────────────────
+function genRoomId() {
+  return Math.random().toString(36).substring(2,8).toUpperCase();
+}
+function configKey(roomId) { return `gacha_config_${roomId}`; }
+
+function getRoomsIndex() {
+  try { return JSON.parse(localStorage.getItem(ROOMS_INDEX_KEY)) || []; } catch(e) { return []; }
+}
+function saveRoomsIndex(arr) { localStorage.setItem(ROOMS_INDEX_KEY, JSON.stringify(arr)); }
+function addToIndex(roomId) {
+  const idx = getRoomsIndex();
+  if (!idx.includes(roomId)) { idx.unshift(roomId); saveRoomsIndex(idx); }
+}
+function removeFromIndex(roomId) {
+  saveRoomsIndex(getRoomsIndex().filter(r => r !== roomId));
+}
+
+// ── Config helpers ───────────────────────────────────────
+function defaultConfig() {
+  return { mode:'percent', jackpotChance:15, guaranteedAt:null, neverBefore:null, disabled:false };
+}
+function loadRoomConfig(roomId) {
+  try {
+    const raw = localStorage.getItem(configKey(roomId));
+    return raw ? {...defaultConfig(),...JSON.parse(raw)} : defaultConfig();
+  } catch(e) { return defaultConfig(); }
+}
+function saveRoomConfig(roomId, cfg) {
+  localStorage.setItem(configKey(roomId), JSON.stringify(cfg));
+}
+
+// ── UI update ────────────────────────────────────────────
+function updateRoomDisplay() {
+  document.getElementById('roomIdDisplay').textContent = currentRoomId;
+  const link = `${location.origin}${location.pathname.replace('remote.html','gacha.html')}?room=${currentRoomId}`;
+  document.getElementById('gachaLink').textContent = link;
+}
+
+function renderRoomsList() {
+  const idx = getRoomsIndex();
+  const el = document.getElementById('roomsList');
+  if (!idx.length) {
+    el.innerHTML = '<div class="empty-rooms">Belum ada room tersimpan.</div>';
+    return;
+  }
+  el.innerHTML = idx.map(id => {
+    const cfg = loadRoomConfig(id);
+    const modeLabel = cfg.disabled ? '🚫 Nonaktif' :
+      cfg.mode==='guaranteed' ? `🎯 Guaranteed spin ke-${cfg.guaranteedAt}` :
+      cfg.mode==='neverBefore' ? `⏳ Terkunci ${cfg.neverBefore} spin` :
+      `🎲 ${cfg.jackpotChance}%`;
+    return `<div class="room-row ${id===currentRoomId?'current':''}" onclick="loadRoom('${id}')">
+      <span class="room-row-id">${id}</span>
+      <span class="room-row-mode">${modeLabel}</span>
+      <button class="room-row-del" onclick="deleteRoom(event,'${id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function syncUIFromConfig(cfg) {
+  selectMode(cfg.mode, document.querySelector(`[data-mode="${cfg.mode}"]`), false);
+  document.getElementById('chanceSlider').value = cfg.jackpotChance ?? 15;
+  document.getElementById('chanceVal').textContent = (cfg.jackpotChance ?? 15) + '%';
+  if (cfg.guaranteedAt) document.getElementById('guaranteedInput').value = cfg.guaranteedAt;
+  if (cfg.neverBefore) document.getElementById('neverBeforeInput').value = cfg.neverBefore;
+  updateCurrentDisplay(cfg);
+}
+
+function updateCurrentDisplay(cfg) {
+  const rows = [
+    ['Room', currentRoomId],
+    ['Mode', cfg.mode],
+    ['Disabled', cfg.disabled ? 'YA 🚫' : 'Tidak'],
+    ['Peluang', cfg.disabled ? '—' : cfg.jackpotChance + '%'],
+    ['Guaranteed At', cfg.guaranteedAt ? 'Spin ke-'+cfg.guaranteedAt : '—'],
+    ['Never Before', cfg.neverBefore ? 'Spin ke-'+cfg.neverBefore : '—'],
+  ];
+  document.getElementById('currentConfig').innerHTML = rows.map(r =>
+    `<div class="cfg-row"><span>${r[0]}</span><span class="cfg-val">${r[1]}</span></div>`
+  ).join('');
+}
+
+// ── Actions ──────────────────────────────────────────────
+function newRoom() {
+  const id = genRoomId();
+  addToIndex(id);
+  currentRoomId = id;
+  updateRoomDisplay();
+  renderRoomsList();
+  syncUIFromConfig(defaultConfig());
+  addLog(`Room baru dibuat: ${id}`, 'ok');
+}
+
+function loadRoom(id) {
+  currentRoomId = id;
+  addToIndex(id); // ensure in index
+  updateRoomDisplay();
+  renderRoomsList();
+  const cfg = loadRoomConfig(id);
+  syncUIFromConfig(cfg);
+  addLog(`Pindah ke room: ${id}`, '');
+}
+
+function switchRoom() {
+  const val = document.getElementById('roomInput').value.trim().toUpperCase();
+  if (!val) return;
+  document.getElementById('roomInput').value = '';
+  loadRoom(val);
+}
+
+function deleteRoom(e, id) {
+  e.stopPropagation();
+  removeFromIndex(id);
+  localStorage.removeItem(configKey(id));
+  if (currentRoomId === id) newRoom();
+  else renderRoomsList();
+  addLog(`Room ${id} dihapus`, 'warn');
+}
+
+function copyRoomId() {
+  navigator.clipboard.writeText(currentRoomId).then(() => addLog('Room ID disalin!','ok'));
+}
+function copyGachaLink() {
+  const link = document.getElementById('gachaLink').textContent;
+  navigator.clipboard.writeText(link).then(() => {
+    const btn = document.getElementById('copyLinkBtn');
+    btn.textContent = '✓ Disalin!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy Link'; btn.classList.remove('copied'); }, 2000);
+    addLog('Link gacha disalin!', 'ok');
+  });
+}
+
+function selectMode(mode, btn, log=true) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active','gold','red','orange'));
+  if (btn) {
+    btn.classList.add('active');
+    if (mode==='guaranteed') btn.classList.add('gold');
+    if (mode==='disabled')   btn.classList.add('red');
+    if (mode==='neverBefore') btn.classList.add('orange');
+  }
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  if (mode==='percent')     document.getElementById('sec-chance').classList.add('visible');
+  if (mode==='guaranteed')  document.getElementById('sec-guaranteed').classList.add('visible');
+  if (mode==='neverBefore') { document.getElementById('sec-chance').classList.add('visible'); document.getElementById('sec-neverBefore').classList.add('visible'); }
+  if (mode==='disabled')    document.getElementById('sec-disabled').classList.add('visible');
+}
+
+function buildConfig() {
+  const cfg = { ...defaultConfig(), mode: currentMode };
+  if (currentMode==='percent')     cfg.jackpotChance = parseInt(document.getElementById('chanceSlider').value);
+  if (currentMode==='guaranteed')  cfg.guaranteedAt  = parseInt(document.getElementById('guaranteedInput').value) || 10;
+  if (currentMode==='neverBefore') { cfg.jackpotChance = parseInt(document.getElementById('chanceSlider').value); cfg.neverBefore = parseInt(document.getElementById('neverBeforeInput').value) || 5; }
+  if (currentMode==='disabled')    cfg.disabled = true;
+  return cfg;
+}
+
+function applyConfig() {
+  const cfg = buildConfig();
+  saveRoomConfig(currentRoomId, cfg);
+  updateCurrentDisplay(cfg);
+  renderRoomsList();
+  addLog(`Config diterapkan ke room ${currentRoomId} → mode: ${cfg.mode}`, 'ok');
+}
+
+function applyPreset(preset) {
+  const map = {
+    easy:       { mode:'percent',    jackpotChance:50, guaranteedAt:null, neverBefore:null, disabled:false },
+    normal:     { mode:'percent',    jackpotChance:15, guaranteedAt:null, neverBefore:null, disabled:false },
+    hard:       { mode:'percent',    jackpotChance:5,  guaranteedAt:null, neverBefore:null, disabled:false },
+    impossible: { mode:'disabled',   jackpotChance:0,  guaranteedAt:null, neverBefore:null, disabled:true  },
+    pity10:     { mode:'neverBefore',jackpotChance:15, guaranteedAt:null, neverBefore:10,  disabled:false },
+    gift5:      { mode:'guaranteed', jackpotChance:15, guaranteedAt:5,   neverBefore:null, disabled:false },
+  };
+  const cfg = map[preset]; if (!cfg) return;
+  saveRoomConfig(currentRoomId, cfg);
+  syncUIFromConfig(cfg);
+  renderRoomsList();
+  addLog(`Preset "${preset}" diterapkan ke room ${currentRoomId}`, 'ok');
+}
+
+function addLog(msg, type='') {
+  const box = document.getElementById('logBox');
+  const ts  = new Date().toLocaleTimeString('id-ID');
+  const div = document.createElement('div'); div.className='entry';
+  div.innerHTML = `<span class="ts">[${ts}]</span><span class="${type}">${msg}</span>`;
+  box.prepend(div);
+}
+
+// ── Init ─────────────────────────────────────────────────
+(function init() {
+  // Check if room param in URL
+  const params = new URLSearchParams(location.search);
+  const paramRoom = params.get('room');
+  const idx = getRoomsIndex();
+
+  if (paramRoom) {
+    currentRoomId = paramRoom.toUpperCase();
+    addToIndex(currentRoomId);
+  } else if (idx.length > 0) {
+    currentRoomId = idx[0]; // last used
+  } else {
+    currentRoomId = genRoomId();
+    addToIndex(currentRoomId);
+  }
+
+  updateRoomDisplay();
+  renderRoomsList();
+  const cfg = loadRoomConfig(currentRoomId);
+  syncUIFromConfig(cfg);
+  addLog(`Room aktif: ${currentRoomId}`, idx.length ? '' : 'ok');
+})();
+</script>
+</body>
+</html>
